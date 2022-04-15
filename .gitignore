@@ -2,6 +2,14 @@
 *.iml
 target
 backup
+.project
+.classpath
+~*
+**/.settings/*
+**/target/*
+**/bin/*
+**/build/*
+
 
 tst-keys
 build.properties

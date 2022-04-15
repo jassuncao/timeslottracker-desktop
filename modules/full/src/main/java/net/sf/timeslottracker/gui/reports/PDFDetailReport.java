@@ -53,7 +53,7 @@ public class PDFDetailReport extends AbstractReport {
   public void transform(File resultFile, Source xmlSource, Transformer trans) throws Exception {
     // FopFactory fopFactory = FopFactory.newInstance(resultFile.toURI());
     DefaultConfigurationBuilder cfgBuilder = new DefaultConfigurationBuilder();
-    InputStream configFile = ReportConfiguration.class.getResourceAsStream("/xslt/fop_conf.xml");
+    InputStream configFile = ReportConfiguration.class.getResourceAsStream("/fop_conf.xml");
     org.apache.avalon.framework.configuration.Configuration cfg = cfgBuilder.build(configFile);
     //File configFile = new File("fop.xconf");
     //org.apache.avalon.framework.configuration.Configuration cfg = cfgBuilder.buildFromFile(configFile);
