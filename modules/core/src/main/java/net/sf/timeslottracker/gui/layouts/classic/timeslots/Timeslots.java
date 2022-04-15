@@ -24,6 +24,10 @@ import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.RowSorter;
 import javax.swing.RowSorter.SortKey;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.SortOrder;
 import javax.swing.TransferHandler;
 import javax.swing.table.TableColumn;
@@ -113,6 +117,9 @@ public class Timeslots extends JPanel implements TimeSlotsInterface,
   private final TimeSlotTracker timeSlotTracker;
 
   private final Updater titleUpdater;
+  
+  /** Keeps the current title (without the total time )*/
+  private String title;
 
   public Timeslots(final LayoutManager layoutManager) {
     super(new BorderLayout());
@@ -202,7 +209,19 @@ public class Timeslots extends JPanel implements TimeSlotsInterface,
         timeSlotHandler.exportDone(data, action);
       }
     });
-
+    table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+        
+        @Override
+        public void valueChanged(ListSelectionEvent e) {
+            int[] selectedRows = table.getSelectedRows();
+            long totalTime = 0;
+            for (int row : selectedRows) {
+                TimeSlot slot = getTimeSlotByTreeRowId(row);
+                totalTime+=slot.getTime();
+            }
+            updateTimeslotsTotals(totalTime);
+        }
+    });
     restore(configuration, datePeriod);
   }
 
@@ -401,6 +420,7 @@ public class Timeslots extends JPanel implements TimeSlotsInterface,
 
   private void doShow(Mode mode, String title, Collection<TimeSlot> timeSlots) {
     currentMode = mode;
+    this.title = title;
     titleUpdater.updateText(title);
 
     TimeSlotFilter timeSlotFilter = datePeriod.getTimeSlotFilter();
@@ -412,6 +432,17 @@ public class Timeslots extends JPanel implements TimeSlotsInterface,
     }
     tableModel.setRows(collection2show);
   }
+  
+  private void updateTimeslotsTotals(long totalMillis){
+      if(totalMillis>0) {
+          String duration = layoutManager.formatDuration(totalMillis);
+          titleUpdater.updateText(this.title + " ("+duration+")");
+      }
+      else {
+          titleUpdater.updateText(this.title);
+      }
+  }
+  
 
   private int findTimeSlot(TimeSlot timeslot) {
     int rowCount = table.getRowCount();
