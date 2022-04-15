@@ -30,55 +30,6 @@
     </dependencies>
 
     <build>
-    <!--
-        <sourceDirectory>../../resources/java_full</sourceDirectory>
-        <resources>
-            <resource>
-                <directory>../../resources/java_full</directory>
-                <excludes>
-                    <exclude>**/*.java</exclude>
-                </excludes>
-            </resource>
-            <resource>
-                <directory>../../resources/icons</directory>
-                <includes>
-                    <include>**/*.gif</include>
-                    <include>**/*.png</include>
-                    <include>**/*.ico</include>
-                    <include>**/*.bmp</include>
-                </includes>
-            </resource>
-            <resource>
-                <directory>../../resources/extra_files</directory>
-                <includes>
-                    <include>**/*.xml</include>
-                    <include>**/*.css</include>
-                    <include>**/*.dtd</include>
-                    <include>**/*.xsl</include>
-                </includes>
-            </resource>
-            <resource>
-                <directory>../../resources/extra_files</directory>
-                <filtering>true</filtering>
-                <includes>
-                    <include>version.properties</include>
-                </includes>
-            </resource>
-            <resource>
-                <directory>../..</directory>
-                <includes>
-                    <include>ChangeLog</include>
-                    <include>KnownIssues</include>
-                </includes>
-            </resource>
-            <resource>
-                <directory>../../resources/libs</directory>
-                <includes>
-                    <include>*license*</include>
-                </includes>
-            </resource>
-        </resources>
-	-->
         <plugins>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>

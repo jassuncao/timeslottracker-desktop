@@ -2,6 +2,11 @@ package net.sf.timeslottracker.gui.lookandfeel;
 
 import javax.swing.SwingUtilities;
 
+import com.formdev.flatlaf.FlatDarculaLaf;
+import com.formdev.flatlaf.FlatDarkLaf;
+import com.formdev.flatlaf.FlatIntelliJLaf;
+import com.formdev.flatlaf.FlatLightLaf;
+
 import net.sf.timeslottracker.core.Action;
 import net.sf.timeslottracker.core.ActionListener;
 import net.sf.timeslottracker.core.Configuration;
@@ -23,6 +28,11 @@ public class LookAndFeelManagerImpl {
 
   public LookAndFeelManagerImpl(TimeSlotTracker timeSlotTracker) {
     this.timeSlotTracker = timeSlotTracker;
+    FlatDarkLaf.installLafInfo();
+    FlatDarculaLaf.installLafInfo();
+    FlatLightLaf.installLafInfo();
+    FlatIntelliJLaf.installLafInfo();
+    
 
     SwingUtils.updateLookAndFeel(
         timeSlotTracker.getConfiguration().getString(
