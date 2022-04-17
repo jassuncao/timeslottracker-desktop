@@ -105,8 +105,7 @@ public class DaysTree extends JPanel implements TasksByDaysInterface,
     // constructs dialog panel with our task's info variables
     dialogPanel = new DialogPanel(GridBagConstraints.BOTH, 0.0);
     combobox = new SwitchViewCombobox(layoutManager);
-    JPanel taskViewSwitcher = new JPanel(
-        new FlowLayout(FlowLayout.CENTER, 0, 0));
+    JPanel taskViewSwitcher = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
     combobox.addActionListener(switchViewAction);
     taskViewSwitcher.add(combobox);
 
@@ -296,8 +295,7 @@ public class DaysTree extends JPanel implements TasksByDaysInterface,
     // construct visual JTree to show them
     tree = new JTree(root);
     tree.setEditable(false);
-    tree.getSelectionModel().setSelectionMode(
-        TreeSelectionModel.SINGLE_TREE_SELECTION);
+    tree.getSelectionModel().setSelectionMode(TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
   }
 
   private void fillRecords(Task parent) {
@@ -321,10 +319,17 @@ public class DaysTree extends JPanel implements TasksByDaysInterface,
    * Select node
    */
   private void refresh() {
-    TreeNode selected = (TreeNode) tree.getLastSelectedPathComponent();
-    if (selected == null) {
-      return;
+    
+    TreePath[] selectionPaths = tree.getSelectionPaths();
+    if(selectionPaths==null) {
+        return;
     }
+    if(selectionPaths.length>1) {
+        showMultipleNodes(selectionPaths);
+        return;
+    }
+    
+    TreeNode selected = (TreeNode) selectionPaths[0].getLastPathComponent();
 
     String description = null;
     Collection<TimeSlot> collection = null;
@@ -351,7 +356,7 @@ public class DaysTree extends JPanel implements TasksByDaysInterface,
         && ((DateNode) selected).getCalendarDateType() == Calendar.DATE) {
       DateNode dateNode = (DateNode) selected;
 
-      ArrayList<TimeSlot> timeslots = new ArrayList<TimeSlot>();
+      ArrayList<TimeSlot> timeslots = new ArrayList<>();
 
       int childCount = dateNode.getChildCount();
       for (int i = 0; i < childCount; i++) {
@@ -368,7 +373,55 @@ public class DaysTree extends JPanel implements TasksByDaysInterface,
         .fireTasksByDaysSelectionChanged(new TasksByDaysSelectionAction(this,
             description, collection));
   }
+  
+  private void showMultipleNodes(TreePath[] selectionPaths) {
+      HashMap<Object, TimeSlot> timeslots = new HashMap<>();
+      TreeSet<Date> uniqueDates = new TreeSet<>();
+      for (TreePath treePath : selectionPaths) {
+          TreeNode node = (TreeNode) treePath.getLastPathComponent();
+          if(node instanceof TaskNode) {
+              TaskNode taskNode = (TaskNode) node;
+              DateNode dateNode = (DateNode) node.getParent();
+              Date date = dateNode.getDate();
+              uniqueDates.add(date);
+              TimeSlotStartedInPeriod dateFilter = new TimeSlotStartedInPeriod(date);
+              Collection<TimeSlot> filtered = FilterUtils.filter(taskNode.getTask().getTimeslots(), dateFilter);
+              for (TimeSlot timeSlot : filtered) {
+                  timeslots.putIfAbsent(timeSlot.getId(), timeSlot);
+              }
+          }
+          else if(node instanceof DateNode  && ((DateNode) node).getCalendarDateType() == Calendar.DATE) {
+              DateNode dateNode = (DateNode) node;
+              Date date = dateNode.getDate();
+              uniqueDates.add(date);
+              TimeSlotStartedInPeriod dateFilter = new TimeSlotStartedInPeriod(date);
 
+              int childCount = dateNode.getChildCount();
+              for (int i = 0; i < childCount; i++) {
+                TaskNode childTaskNode = (TaskNode) dateNode.getChildAt(i);
+                Collection<TimeSlot> filtered = FilterUtils.filter(childTaskNode.getTask().getTimeslots(), dateFilter);
+                for (TimeSlot timeSlot : filtered) {
+                    timeslots.putIfAbsent(timeSlot.getId(), timeSlot);
+                }
+              }
+          }
+      }
+      if(uniqueDates.isEmpty()) {
+          return ;
+      }
+      String description;
+      Date first = uniqueDates.first();
+      Date last = uniqueDates.last();
+      if(first.equals(last)) {
+          description = DATE_FORMAT.format(first);
+      }
+      else {
+          description = DATE_FORMAT.format(first) + " - " + DATE_FORMAT.format(last);
+      }
+      layoutManager.fireTasksByDaysSelectionChanged(new TasksByDaysSelectionAction(this,
+              description, timeslots.values()));
+  }
+  
   private void reloadTree() {
     // construct tree from data source
     dataSource = layoutManager.getTimeSlotTracker().getDataSource();
@@ -417,7 +470,7 @@ public class DaysTree extends JPanel implements TasksByDaysInterface,
       if (searchNode == null) {
         layoutManager
             .fireTasksByDaysSelectionChanged(new TasksByDaysSelectionAction(
-                this, null, Collections.EMPTY_LIST));
+                this, null, Collections.emptyList()));
         return;
       }
 
